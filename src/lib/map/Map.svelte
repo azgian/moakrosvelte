@@ -8,7 +8,7 @@
 
   let mapElement: HTMLElement;
   let map: google.maps.Map;
-    const apiKey = import.meta.env.GOOGLE_MAPS_API_KEY;
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   
   onMount(() => {
     if (!window.google) {

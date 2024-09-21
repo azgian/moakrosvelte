@@ -8,7 +8,7 @@
 
   let mapElement: HTMLElement;
   let map: google.maps.Map;
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   
   onMount(() => {
     if (!window.google) {
@@ -26,7 +26,8 @@
   function initMap() {
     map = new window.google.maps.Map(mapElement, {
       center: { lat: 35.7215089, lng: 127.0184599 }, // 금평호
-      zoom: 15
+      zoom: 15,
+      gestureHandling: 'greedy' // 한손가락 지도이동 가능하게
     });
   }
 </script>

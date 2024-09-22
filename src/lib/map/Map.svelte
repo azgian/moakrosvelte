@@ -213,10 +213,10 @@
 
   .search-form {
     flex: 1;
-    min-width: 0; /* 이 줄을 추가합니다 */
+    min-width: 0;
     height: 60px;
     background-color: rgba(255, 255, 255, 0.8);
-    padding: 10px;
+    padding: 5px 10px; /* 패딩을 줄임 */
     border-radius: 30px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     display: flex;
@@ -226,18 +226,20 @@
   .logo {
     width: 40px;
     height: 40px;
-    margin-left: 10px;
+    margin-right: 5px; /* 오른쪽 마진 추가 */
     object-fit: contain;
+    flex-shrink: 0; /* 로고 크기 유지 */
   }
 
   .search-form input {
     flex-grow: 1;
     height: 40px;
-    padding: 0 10px;
+    padding: 0 5px; /* 패딩을 줄임 */
     border: none;
     background: transparent;
     font-size: 16px;
     outline: none;
+    min-width: 0; /* 입력 필드가 줄어들 수 있도록 함 */
   }
 
   .search-form button {
@@ -245,10 +247,11 @@
     border: none;
     cursor: pointer;
     padding: 0;
-    margin-left: 10px;
+    margin-left: 5px; /* 마진을 줄임 */
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0; /* 버튼 크기 유지 */
   }
 
   .search-form button .material-icons {
@@ -257,7 +260,7 @@
   }
 
   .map-type-toggle {
-    flex-shrink: 0; /* 이 줄을 추가합니다 */
+    flex-shrink: 0;
     position: relative;
     width: 60px;
     height: 60px;
@@ -381,5 +384,30 @@
   :global(.gmnoprint),
   :global(.gm-style-mtc) {
     display: none;
+  }
+
+  /* 모바일 화면에 대한 미디어 쿼리 추가 */
+  @media (max-width: 600px) {
+    .search-form {
+      padding: 5px;
+    }
+
+    .logo {
+      width: 30px;
+      height: 30px;
+    }
+
+    .search-form input {
+      font-size: 14px;
+    }
+
+    .search-form button .material-icons {
+      font-size: 20px;
+    }
+
+    .map-type-toggle {
+      width: 50px;
+      height: 50px;
+    }
   }
 </style>

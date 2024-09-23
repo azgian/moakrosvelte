@@ -14,6 +14,7 @@
     let showInstallPrompt = false;
     const deferredPrompt = writable<any>(null);
     const drawerOpen = writable(false);
+    let isDesktop = false;
 
     onMount(() => {
         setTimeout(() => {
@@ -27,7 +28,16 @@
                 // deferredPrompt.set(e); // PWA 설치 프롬프트 이벤트 비활성화
             });
         }
+
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+        return () => window.removeEventListener('resize', checkScreenSize);
     });
+
+    function checkScreenSize() {
+        isDesktop = window.innerWidth >= 768; // 768px를 데스크톱 기준으로 설정
+        drawerOpen.set(isDesktop); // 데스크톱에서는 항상 열려있도록 설정
+    }
 
     // function checkInstallPrompt() {
     //     if (browser && ('standalone' in navigator || window.matchMedia('(display-mode: standalone)').matches)) {
@@ -52,71 +62,99 @@
         }
     }
 
-    function toggleDrawer() {
-        drawerOpen.update(value => !value);
-    }
+    // function toggleDrawer() {
+    //     if (!isDesktop) {
+    //         drawerOpen.update(value => !value);
+    //     }
+    // }
 
-  function closeDrawer() {
-    $drawerOpen = false;
-  }
+    // function closeDrawer() {
+    //     if (!isDesktop) {
+    //         drawerOpen.set(false);
+    //     }
+    // }
 </script>
 
-<button class="menu-button map-control-button" on:click={toggleDrawer}>
-    <span class="material-icons">menu</span>
-</button>
+<div class="app-container">
+    <!-- <button class="menu-button map-control-button" on:click={toggleDrawer} class:hidden={isDesktop}>
+        <span class="material-icons">menu</span>
+    </button> -->
 
-<Drawer open={$drawerOpen} on:close={closeDrawer}>
-    <p>사이드바 내용</p>
-</Drawer>
+    <Drawer drawerOpen={$drawerOpen} {isDesktop}>
+        <p>사이드바 내용</p>
+    </Drawer>
 
-{#if loading}
-  <div transition:fade="{{ duration: 300 }}" class="loading-screen">
-    <img src="/images/logo300.png" alt="로고" />
-    <p>앱 로딩 중...</p>
-  </div>
-{:else}
-  <slot />
-{/if}
+    <main>
+        {#if loading}
+            <div transition:fade="{{ duration: 300 }}" class="loading-screen">
+                <img src="/images/logo300.png" alt="로고" />
+                <p>앱 로딩 중...</p>
+            </div>
+        {:else}
+            <slot />
+        {/if}
 
-{#if showInstallPrompt}
-  <div transition:fade="{{ duration: 300 }}" class="install-prompt">
-    <p>홈 화면에 추가하여 앱처럼 사용해보세요!</p>
-    <button on:click={installPWA}>설치하기</button>
-    <button on:click={closeInstallPrompt}>닫기</button>
-  </div>
-{/if}
+        {#if showInstallPrompt}
+            <div transition:fade="{{ duration: 300 }}" class="install-prompt">
+                <p>홈 화면에 추가하여 앱처럼 사용해보세요!</p>
+                <button on:click={installPWA}>설치하기</button>
+                <button on:click={closeInstallPrompt}>닫기</button>
+            </div>
+        {/if}
+    </main>
+</div>
 
 <style>
-  .loading-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-  }
+    .app-container {
+        display: flex;
+        height: 100vh;
+    }
 
-  .install-prompt {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #f0f0f0;
-    padding: 10px 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 1000;
-  }
+    main {
+        flex-grow: 1;
+        position: relative;
+    }
 
-  .menu-button {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 1000;
-  }
+    .loading-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .install-prompt {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #f0f0f0;
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 1000;
+    }
+
+    /* .menu-button {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1000;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    @media (min-width: 768px) {
+        .menu-button {
+            display: none;
+        }
+    } */
 </style>

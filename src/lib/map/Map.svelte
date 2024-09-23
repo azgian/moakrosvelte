@@ -165,7 +165,7 @@
       <input 
         type="text" 
         bind:value={searchQuery} 
-        placeholder="장소를 검색하세요"
+        placeholder="지명, 인명 등 검색"
       />
       <button on:click={handleSearch} aria-label="검색" class="map-control-button">
         <span class="material-icons">search</span>
@@ -189,11 +189,9 @@
       <span class="material-icons">remove</span>
     </button>
   </div>
-  <div class="current-location-control">
     <button class="map-control-button current-location-button" on:click={moveToCurrentLocation} aria-label="현재 위치로 이동">
       <span class="material-icons">my_location</span>
     </button>
-  </div>
   <div bind:this={mapElement} class="map"></div>
 </div>
 
@@ -243,11 +241,11 @@
 
   .search-form input {
     flex-grow: 1;
-    height: 40px;
+    height: 100%;
     padding: 0 5px; /* 패딩을 줄임 */
     border: none;
     background: transparent;
-    font-size: 16px;
+    font-size: 1.05rem;
     outline: none;
     min-width: 0; /* 입력 필드가 줄어들 수 있도록 함 */
   }
@@ -355,26 +353,12 @@
     color: var(--primary-color);
   }
 
-  .current-location-control {
+  .current-location-button {
     position: absolute;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
-  }
-
-  .current-location-button {
-    width: 60px;
-    height: 60px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border: none;
-    border-radius: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s;
   }
 
   .current-location-button:hover {
@@ -405,16 +389,12 @@
     }
 
     .search-form {
-      padding: 5px;
+      height: 50px;
     }
 
     .logo {
       width: 30px;
       height: 30px;
-    }
-
-    .search-form input {
-      font-size: 14px;
     }
 
     .search-form button .material-icons {

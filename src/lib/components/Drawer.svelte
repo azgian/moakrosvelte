@@ -1,77 +1,52 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { writable } from 'svelte/store';
-  import { createEventDispatcher } from 'svelte';
+  export let drawerOpen: boolean;
+  export let isDesktop: boolean = false;
 
-  export let open = false;
-  const startX = writable(0);
-  const currentX = writable(0);
-  const isDragging = writable(false);
-
-  let drawer: HTMLElement;
-
-  const dispatch = createEventDispatcher();
+  let startX = 0;
+  let currentX = 0;
+  let isSwiping = false;
 
   function handleTouchStart(event: TouchEvent) {
-    startX.set(event.touches[0].clientX);
-    currentX.set(event.touches[0].clientX);
-    isDragging.set(true);
+    startX = event.touches[0].clientX;
+    isSwiping = true;
   }
 
   function handleTouchMove(event: TouchEvent) {
-    if ($isDragging) {
-      currentX.set(event.touches[0].clientX);
-      const translateX = Math.min(0, $currentX - $startX);
-      drawer.style.transform = `translateX(${translateX}px)`;
+    if (!isSwiping) return;
+    currentX = event.touches[0].clientX;
+    const diffX = currentX - startX;
+    if (diffX > 50) {
+      drawerOpen = true;
+      isSwiping = false;
+    } else if (diffX < -50) {
+      drawerOpen = false;
+      isSwiping = false;
     }
   }
 
   function handleTouchEnd() {
-    isDragging.set(false);
-    const translateX = $currentX - $startX;
-    if (translateX < -50) {
-      open = false;
-    } else {
-      open = true;
-    }
-    drawer.style.transform = '';
+    isSwiping = false;
   }
 
-  function onClose() {
-    dispatch('close');
+  function toggleDrawer() {
+    drawerOpen = !drawerOpen;
   }
-
-  onMount(() => {
-    drawer.addEventListener('touchstart', handleTouchStart);
-    drawer.addEventListener('touchmove', handleTouchMove);
-    drawer.addEventListener('touchend', handleTouchEnd);
-  });
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="overlay {open ? 'open' : ''}" on:click={onClose} role="button" aria-label="Close drawer" tabindex="0"></div>
-<div class="drawer {open ? 'open' : ''}">
+{#if !isDesktop}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div class="overlay { drawerOpen ? 'open' : ''}" on:click={() => drawerOpen = false} role="button" aria-label="Close drawer" tabindex="0"></div>
+{/if}
+<nav class="drawer { drawerOpen || isDesktop ? 'open' : ''}">
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div class="drag-handle" on:touchstart={handleTouchStart} on:touchmove={handleTouchMove} on:touchend={handleTouchEnd} on:click={toggleDrawer}>
+    <span class="material-icons">{ drawerOpen ? 'chevron_left' : 'chevron_right' }</span>
+  </div>
   <slot></slot>
-</div>
+</nav>
 
 <style>
-  .drawer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100%;
-    background-color: #fff;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    z-index: 1500; /* z-index 설정 */
-  }
-
-  .drawer.open {
-    transform: translateX(0);
-  }
-
   .overlay {
     position: fixed;
     top: 0;
@@ -79,11 +54,53 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1100; /* z-index 설정 */
     display: none;
+    z-index: 1100;
   }
-
   .overlay.open {
     display: block;
+  }
+  .drawer {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100%;
+    background-color: white;
+    transition: left 0.3s ease-in-out;
+    z-index: 1200;
+  }
+  .drawer.open {
+    left: 0;
+  }
+
+  .drag-handle {
+    position: absolute;
+    top: 50%;
+    right: -30px;
+    width: 30px;
+    height: 60px;
+    background-color: rgba(256, 256, 256, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-50%);
+    cursor: pointer;
+    border-radius: 0 20px 20px 0; /* 반원형 모양 */
+  }
+
+  .drag-handle .material-icons {
+    font-size: 24px;
+    color: #000;
+  }
+
+  @media (min-width: 768px) {
+    .drawer {
+      position: relative;
+      left: 0;
+    }
+    .drag-handle {
+      display: none;
+    }
   }
 </style>

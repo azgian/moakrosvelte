@@ -438,29 +438,6 @@
     }
   }
 
-  /* 공통 버튼 스타일 */
-  .map-control-button {
-    width: 60px;
-    height: 60px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border: none;
-    border-radius: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-
-  .map-control-button:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-  }
-
-  .map-control-button .material-icons {
-    font-size: 24px;
-    color: var(--primary-color);
-  }
 
   /* 특정 버튼에 대한 추가 스타일 */
   .ai-button {
@@ -481,15 +458,6 @@
 
   /* 모바일 화면에 대한 미디어 쿼리 */
   @media (max-width: 600px) {
-    .map-control-button {
-      width: 50px;
-      height: 50px;
-    }
-
-    .map-control-button .material-icons {
-      font-size: 20px;
-    }
-
     .ai-button {
       margin-left: 5px;
     }

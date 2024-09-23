@@ -1,3 +1,5 @@
+/**** service-worker.js 주석처리
+
 /// <reference lib="webworker" />
 
 import { build, files, version } from '$service-worker';
@@ -81,3 +83,5 @@ self.addEventListener('notificationclick', (event) => {
     self.clients.openWindow('/')
   );
 });
+
+/*****/

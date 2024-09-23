@@ -3,34 +3,38 @@
     import { browser } from '$app/environment';
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
-    import { writable, type Writable } from 'svelte/store';
+    import { writable } from 'svelte/store';
+    import Drawer from '$lib/components/Drawer.svelte';
+    import '../app.css';
 
     export let data: LayoutData;
 
-    let loading = true;
+    // let loading = true;
+    let loading = false;
     let showInstallPrompt = false;
-    const deferredPrompt: Writable<any> = writable(null);
+    const deferredPrompt = writable<any>(null);
+    const drawerOpen = writable(false);
 
     onMount(() => {
         setTimeout(() => {
             loading = false;
-            checkInstallPrompt();
+            // checkInstallPrompt(); // PWA 설치 프롬프트 체크 비활성화
         }, 2000);
 
         if (browser) {
             window.addEventListener('beforeinstallprompt', (e: Event) => {
                 e.preventDefault();
-                deferredPrompt.set(e);
+                // deferredPrompt.set(e); // PWA 설치 프롬프트 이벤트 비활성화
             });
         }
     });
 
-    function checkInstallPrompt() {
-        if (browser && ('standalone' in navigator || window.matchMedia('(display-mode: standalone)').matches)) {
-            return;
-        }
-        showInstallPrompt = true;
-    }
+    // function checkInstallPrompt() {
+    //     if (browser && ('standalone' in navigator || window.matchMedia('(display-mode: standalone)').matches)) {
+    //         return;
+    //     }
+    //     showInstallPrompt = true;
+    // }
 
     function closeInstallPrompt() {
         showInstallPrompt = false;
@@ -47,7 +51,23 @@
             });
         }
     }
+
+    function toggleDrawer() {
+        drawerOpen.update(value => !value);
+    }
+
+  function closeDrawer() {
+    $drawerOpen = false;
+  }
 </script>
+
+<button class="menu-button map-control-button" on:click={toggleDrawer}>
+    <span class="material-icons">menu</span>
+</button>
+
+<Drawer open={$drawerOpen} on:close={closeDrawer}>
+    <p>사이드바 내용</p>
+</Drawer>
 
 {#if loading}
   <div transition:fade="{{ duration: 300 }}" class="loading-screen">
@@ -90,6 +110,13 @@
     padding: 10px 20px;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+  }
+
+  .menu-button {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
     z-index: 1000;
   }
 </style>

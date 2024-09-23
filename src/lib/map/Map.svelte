@@ -150,10 +150,16 @@
       getUserLocation();
     }
   }
+
+  function handleAISearch() {
+    console.log('AI 검색 실행');
+    // 여기에 AI 검색 로직을 구현하세요
+  }
+
 </script>
 
 <div class="map-container">
-  <div class="control-container">
+  <div class="search-container">
     <div class="search-form">
       <img src="/images/logo300.png" alt="로고" class="logo" />
       <input 
@@ -161,27 +167,30 @@
         bind:value={searchQuery} 
         placeholder="장소를 검색하세요"
       />
-      <button on:click={handleSearch} aria-label="검색">
+      <button on:click={handleSearch} aria-label="검색" class="map-control-button">
         <span class="material-icons">search</span>
       </button>
     </div>
-    <button class="map-type-toggle" on:click={changeMapType}>
+    <button on:click={handleAISearch} aria-label="AI 검색" class="map-control-button ai-button">
+      <span>AI</span>
+    </button>
+  </div>
+  <div class="map-controls">
+    <button class="map-control-button map-type-toggle" on:click={changeMapType}>
       <span class="material-icons">layers</span>
       {#if showTooltip}
         <span class="tooltip">{mapTypeLabels[mapTypeIndex]}</span>
       {/if}
     </button>
-  </div>
-  <div class="zoom-controls">
-    <button class="zoom-button" on:click={zoomIn} aria-label="확대">
+    <button class="map-control-button zoom-button" on:click={zoomIn} aria-label="확대">
       <span class="material-icons">add</span>
     </button>
-    <button class="zoom-button" on:click={zoomOut} aria-label="축소">
+    <button class="map-control-button zoom-button" on:click={zoomOut} aria-label="축소">
       <span class="material-icons">remove</span>
     </button>
   </div>
   <div class="current-location-control">
-    <button class="current-location-button" on:click={moveToCurrentLocation} aria-label="현재 위치로 이동">
+    <button class="map-control-button current-location-button" on:click={moveToCurrentLocation} aria-label="현재 위치로 이동">
       <span class="material-icons">my_location</span>
     </button>
   </div>
@@ -200,14 +209,15 @@
     height: 100vh;
   }
 
-  .control-container {
+  .search-container {
     position: absolute;
     top: 10px;
     left: 10px;
     right: 10px;
     display: flex;
     align-items: center;
-    max-width: calc(100% - 20px);
+    max-width: 600px;
+    margin: 0 auto;
     z-index: 1000;
   }
 
@@ -259,9 +269,18 @@
     color: var(--primary-color);
   }
 
+  .map-controls {
+    position: absolute;
+    bottom: 100px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+  }
+
   .map-type-toggle {
-    flex-shrink: 0;
-    position: relative;
+    position: relative; /* 툴팁 위치 지정을 위해 추가 */
     width: 60px;
     height: 60px;
     background-color: rgba(255, 255, 255, 0.8);
@@ -273,22 +292,12 @@
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.3s;
-    margin-left: 10px;
-    white-space: nowrap;
-  }
-
-  .map-type-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-  }
-
-  .map-type-toggle .material-icons {
-    font-size: 24px;
-    color: var(--primary-color);
+    margin-bottom: 10px;
   }
 
   .tooltip {
     position: absolute;
-    top: 100%;
+    top: -30px; /* 버튼 위로 툴팁 위치 */
     left: 50%;
     transform: translateX(-50%);
     background-color: var(--primary-color);
@@ -301,23 +310,21 @@
     animation: fadeInOut 2s ease-in-out;
   }
 
+  /* 툴팁 화살표 추가 */
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--primary-color) transparent transparent transparent;
+  }
+
   @keyframes fadeInOut {
     0%, 100% { opacity: 0; }
     10%, 90% { opacity: 1; }
-  }
-
-  .map {
-    width: 100%;
-    height: 100%;
-  }
-
-  .zoom-controls {
-    position: absolute;
-    bottom: 100px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    z-index: 1000;
   }
 
   .zoom-button {
@@ -379,6 +386,11 @@
     color: var(--primary-color);
   }
 
+  .map {
+    width: 100%;
+    height: 100%;
+  }
+
   /* 전역 스타일을 추가하여 지도 컨트롤이 검색 폼 위에 나타나지 않도록 합니다 */
   :global(.gm-style-cc),
   :global(.gmnoprint),
@@ -388,6 +400,10 @@
 
   /* 모바일 화면에 대한 미디어 쿼리 추가 */
   @media (max-width: 600px) {
+    .search-container {
+      max-width: 100%;
+    }
+
     .search-form {
       padding: 5px;
     }
@@ -405,9 +421,77 @@
       font-size: 20px;
     }
 
-    .map-type-toggle {
+    .map-controls {
+      bottom: 80px;
+      right: 10px;
+    }
+
+    .map-type-toggle,
+    .zoom-button {
       width: 50px;
       height: 50px;
+    }
+
+    .tooltip {
+      font-size: 10px;
+      padding: 3px 8px;
+    }
+  }
+
+  /* 공통 버튼 스타일 */
+  .map-control-button {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .map-control-button:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
+  .map-control-button .material-icons {
+    font-size: 24px;
+    color: var(--primary-color);
+  }
+
+  /* 특정 버튼에 대한 추가 스타일 */
+  .ai-button {
+    margin-left: 10px;
+  }
+
+  .ai-button span {
+    font-weight: bold;
+  }
+
+  .zoom-button {
+    margin-bottom: 10px;
+  }
+
+  .zoom-button:last-child {
+    margin-bottom: 0;
+  }
+
+  /* 모바일 화면에 대한 미디어 쿼리 */
+  @media (max-width: 600px) {
+    .map-control-button {
+      width: 50px;
+      height: 50px;
+    }
+
+    .map-control-button .material-icons {
+      font-size: 20px;
+    }
+
+    .ai-button {
+      margin-left: 5px;
     }
   }
 </style>

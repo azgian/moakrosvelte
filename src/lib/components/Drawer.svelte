@@ -66,7 +66,7 @@
     left: -280px;
     width: 280px;
     height: 100%;
-    background-color: white;
+    background-color: var(--sidebar-color); /* 배경색에 --primary-color 적용 */
     transition: left 0.3s ease-in-out;
     z-index: 1200;
   }
@@ -80,7 +80,7 @@
     right: -30px;
     width: 30px;
     height: 60px;
-    background-color: rgba(256, 256, 256, 0.8);
+    background-color: var(--sidebar-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -91,7 +91,7 @@
 
   .drag-handle .material-icons {
     font-size: 24px;
-    color: #000;
+    color: #fff; /* 아이콘 색을 투명으로 설정 */
   }
 
   @media (min-width: 768px) {

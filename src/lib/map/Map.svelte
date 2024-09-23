@@ -196,11 +196,6 @@
 </div>
 
 <style>
-  :root {
-    --primary-color: #2e6930; /* 녹색 계열 색상 */
-    --primary-color-dark: #1c411e; /* 조금 더 어두운 녹색 */
-  }
-
   .map-container {
     position: relative;
     width: 100%;

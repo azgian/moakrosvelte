@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Menu from './Menu.svelte';
   export let drawerOpen: boolean;
   export let isDesktop: boolean = false;
 
@@ -44,6 +45,7 @@
     <span class="material-icons">{ drawerOpen ? 'chevron_left' : 'chevron_right' }</span>
   </div>
   <slot></slot>
+  <Menu />
 </nav>
 
 <style>
@@ -66,7 +68,7 @@
     left: -280px;
     width: 280px;
     height: 100%;
-    background-color: var(--sidebar-color); /* 배경색에 --primary-color 적용 */
+    background-color: var(--sidebar-color);
     transition: left 0.3s ease-in-out;
     z-index: 1200;
   }

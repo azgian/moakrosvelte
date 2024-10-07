@@ -1,6 +1,41 @@
-// place files you want to import through the `$lib` alias in this folder.
+import { Timestamp } from 'firebase/firestore';
 
+export const convertToTimestamp = (date: unknown): Timestamp => {
+    if (date instanceof Timestamp) {
+        return date;
+    }
+    if (date instanceof Date) {
+        return Timestamp.fromDate(date);
+    }
+    if (typeof date === 'number') {
+        return new Timestamp(Math.floor(date / 1000), (date % 1000) * 1000000);
+    }
+    if (typeof date === 'string') {
+        return Timestamp.fromDate(new Date(date));
+    }
+    throw new Error('Unknown date format');
+};
 
+export const formatDate = (date: unknown, format: string = ''): string => {
+    if (!date) return '날짜 없음';
+    
+    const d = convertToTimestamp(date).toDate();
+    
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    const ymd = `${year}-${month}-${day}`;
+    
+    if (format === 'ymd') {
+        return ymd;
+    } else {
+        const hours = d.getHours().toString().padStart(2, '0');
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const seconds = d.getSeconds().toString().padStart(2, '0');
+        const time = `${hours}:${minutes}:${seconds}`;
+        return `${ymd} ${time}`;
+    }
+};
 
 
 

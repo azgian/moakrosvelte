@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Menu from './Menu.svelte';
+  import SideLeftNav from './SideLeftNav.svelte';
   export let drawerOpen: boolean;
   export let isDesktop: boolean = false;
 
@@ -7,12 +7,12 @@
   let currentX = 0;
   let isSwiping = false;
 
-  function handleTouchStart(event: TouchEvent) {
+  const handleTouchStart = (event: TouchEvent) => {
     startX = event.touches[0].clientX;
     isSwiping = true;
   }
 
-  function handleTouchMove(event: TouchEvent) {
+  const handleTouchMove = (event: TouchEvent) => {
     if (!isSwiping) return;
     currentX = event.touches[0].clientX;
     const diffX = currentX - startX;
@@ -25,27 +25,23 @@
     }
   }
 
-  function handleTouchEnd() {
+  const handleTouchEnd = () => {
     isSwiping = false;
   }
 
-  function toggleDrawer() {
+  const toggleDrawer = () => {
     drawerOpen = !drawerOpen;
   }
 </script>
 
 {#if !isDesktop}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="overlay { drawerOpen ? 'open' : ''}" on:click={() => drawerOpen = false} role="button" aria-label="Close drawer" tabindex="0"></div>
+  <button class="overlay { drawerOpen ? 'open' : ''}" on:click={() => drawerOpen = false} aria-label="Close drawer" tabindex="0"></button>
 {/if}
-<nav class="drawer { drawerOpen || isDesktop ? 'open' : ''}">
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="drag-handle" on:touchstart={handleTouchStart} on:touchmove={handleTouchMove} on:touchend={handleTouchEnd} on:click={toggleDrawer}>
+<nav class="side-left { drawerOpen || isDesktop ? 'open' : ''}">
+  <button class="drag-handle" on:touchstart={handleTouchStart} on:touchmove={handleTouchMove} on:touchend={handleTouchEnd} on:click={toggleDrawer}>
     <span class="material-icons">{ drawerOpen ? 'chevron_left' : 'chevron_right' }</span>
-  </div>
-  <slot></slot>
-  <Menu />
+  </button>
+  <SideLeftNav />
 </nav>
 
 <style>
@@ -56,13 +52,14 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
+    border: none;
     display: none;
     z-index: 1100;
   }
   .overlay.open {
     display: block;
   }
-  .drawer {
+  .side-left {
     position: fixed;
     top: 0;
     left: -280px;
@@ -72,7 +69,7 @@
     transition: left 0.3s ease-in-out;
     z-index: 1200;
   }
-  .drawer.open {
+  .side-left.open {
     left: 0;
   }
 
@@ -88,16 +85,17 @@
     justify-content: center;
     transform: translateY(-50%);
     cursor: pointer;
-    border-radius: 0 20px 20px 0; /* 반원형 모양 */
+    border-radius: 0 20px 20px 0;
+    border: none;
   }
 
   .drag-handle .material-icons {
     font-size: 24px;
-    color: #fff; /* 아이콘 색을 투명으로 설정 */
+    color: #fff;
   }
 
   @media (min-width: 768px) {
-    .drawer {
+    .side-left {
       position: relative;
       left: 0;
     }

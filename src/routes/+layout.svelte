@@ -4,7 +4,9 @@
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     import { writable } from 'svelte/store';
-    import Drawer from '$lib/components/Drawer.svelte';
+    import { user, isLoggedIn } from '$lib/stores';
+    import type { UserData } from '$lib/types';
+    import SideLeft from '$lib/components/SideLeft.svelte';
     import '../app.css';
 
     export let data: LayoutData;
@@ -17,6 +19,10 @@
     let isDesktop = false;
 
     onMount(() => {
+
+        user.set(data.user as UserData);
+        isLoggedIn.set($user?.uid ? true : false);
+
         setTimeout(() => {
             loading = false;
             // checkInstallPrompt(); // PWA 설치 프롬프트 체크 비활성화
@@ -34,7 +40,7 @@
         return () => window.removeEventListener('resize', checkScreenSize);
     });
 
-    function checkScreenSize() {
+    const checkScreenSize = () => {
         isDesktop = window.innerWidth >= 768; // 768px를 데스크톱 기준으로 설정
         drawerOpen.set(isDesktop); // 데스크톱에서는 항상 열려있도록 설정
     }
@@ -46,11 +52,11 @@
     //     showInstallPrompt = true;
     // }
 
-    function closeInstallPrompt() {
+    const closeInstallPrompt = () => {
         showInstallPrompt = false;
     }
 
-    function installPWA() {
+    const installPWA = () => {
         if ($deferredPrompt) {
             ($deferredPrompt as any).prompt();
             ($deferredPrompt as any).userChoice.then((choiceResult: { outcome: string }) => {
@@ -61,28 +67,11 @@
             });
         }
     }
-
-    // function toggleDrawer() {
-    //     if (!isDesktop) {
-    //         drawerOpen.update(value => !value);
-    //     }
-    // }
-
-    // function closeDrawer() {
-    //     if (!isDesktop) {
-    //         drawerOpen.set(false);
-    //     }
-    // }
 </script>
 
 <div class="app-container">
-    <!-- <button class="menu-button map-control-button" on:click={toggleDrawer} class:hidden={isDesktop}>
-        <span class="material-icons">menu</span>
-    </button> -->
 
-    <Drawer drawerOpen={$drawerOpen} {isDesktop}>
-        <p>사이드바 내용</p>
-    </Drawer>
+    <SideLeft drawerOpen={$drawerOpen} {isDesktop} />
 
     <main>
         {#if loading}

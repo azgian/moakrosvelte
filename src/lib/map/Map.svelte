@@ -1,13 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import {
-    PUBLIC_GOOGLE_MAPS_API_KEY
-    // PUBLIC_FIREBASE_AUTH_DOMAIN,
-    // PUBLIC_FIREBASE_PROJECT_ID,
-    // PUBLIC_FIREBASE_STORAGE_BUCKET,
-    // PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    // PUBLIC_FIREBASE_APP_ID
-} from '$env/static/public';
+  import { PUBLIC_GOOGLE_MAPS_API_KEY } from '$env/static/public';
+  import { initLat, initLng, initZoom } from '$lib/gmap';
+	import { goto } from '$app/navigation';
 
   let mapElement: HTMLElement;
   let map: google.maps.Map | null = null;
@@ -19,6 +14,7 @@
   const apiKey = PUBLIC_GOOGLE_MAPS_API_KEY;
   
   let currentPosition: google.maps.LatLngLiteral | null = null;
+  let isMapLoaded = false;
 
   onMount(() => {
     if (!window.google) {
@@ -33,7 +29,7 @@
     }
   });
 
-  function getUserLocation() {
+  const getUserLocation = () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         position => {
@@ -52,10 +48,10 @@
     }
   }
 
-  function initMap(lat: number = 35.7215089, lng: number = 127.0184599) {
-    map = new window.google.maps.Map(mapElement, {
+  const initMap = (lat: number = initLat, lng: number = initLng) => {
+    map = new google.maps.Map(mapElement, {
       center: { lat, lng },
-      zoom: 15,
+      zoom: initZoom,
       mapTypeId: mapTypes[mapTypeIndex],
       gestureHandling: 'greedy',
       // 모든 기본 컨트롤 제거
@@ -65,6 +61,11 @@
       streetViewControl: false,
       rotateControl: false,
       fullscreenControl: false
+    });
+
+    // 지도 로딩 완료 시 isMapLoaded를 true로 설정
+    google.maps.event.addListenerOnce(map, 'tilesloaded', () => {
+      isMapLoaded = true;
     });
 
     // 현재 위치에 마커 추가 (my_location 아이콘 사용)
@@ -83,12 +84,12 @@
     });
   }
 
-  function handleSearch() {
+  const handleSearch = () => {
     console.log('검색어:', searchQuery);
     // 여기에 검색 로직을 구현하세요
   }
 
-  function changeMapType() {
+  const changeMapType = () => {
     mapTypeIndex = (mapTypeIndex + 1) % mapTypes.length;
     if (map) {
       map.setMapTypeId(mapTypes[mapTypeIndex]);
@@ -99,25 +100,16 @@
     }, 1000); // 2초 후 툴팁 숨김
   }
 
-  function zoomIn() {
+  const zoomSet = (zoom: number) => {
     if (map) {
       const currentZoom = map.getZoom();
       if (currentZoom !== undefined) {
-        map.setZoom(currentZoom + 1);
+        map.setZoom(currentZoom + zoom);
       }
     }
   }
 
-  function zoomOut() {
-    if (map) {
-      const currentZoom = map.getZoom();
-      if (currentZoom !== undefined) {
-        map.setZoom(currentZoom - 1);
-      }
-    }
-  }
-
-  function moveToCurrentLocation() {
+  const moveToCurrentLocation = () => {
     if (map && currentPosition) {
       const duration = 250; // 500 밀리초로 줄임 (0.5초)
       const fps = 60;
@@ -125,7 +117,7 @@
       
       const currentCenter = map.getCenter();
       const currentZoom = map.getZoom() || 0;
-      const targetZoom = 15;
+      const targetZoom = initZoom;
       
       let frame = 0;
       const animate = () => {
@@ -159,7 +151,7 @@
     }
   }
 
-  function handleAISearch() {
+  const handleAISearch = () => {
     console.log('AI 검색 실행');
     // 여기에 AI 검색 로직을 구현하세요
   }
@@ -175,7 +167,7 @@
         bind:value={searchQuery} 
         placeholder="지명, 인명 등 검색"
       />
-      <button on:click={handleSearch} aria-label="검색" class="map-control-button">
+      <button on:click={handleSearch} aria-label="검색">
         <span class="material-icons">search</span>
       </button>
     </div>
@@ -183,24 +175,40 @@
       <span>AI</span>
     </button>
   </div>
-  <div class="map-controls">
+  <div class="map-controls-right">
+    <button class="map-control-button user-button" on:click={()=>goto('/auth')} aria-label="Auth">
+      <span class="material-icons">person_outline</span>
+    </button>
     <button class="map-control-button map-type-toggle" on:click={changeMapType}>
       <span class="material-icons">layers</span>
       {#if showTooltip}
         <span class="tooltip">{mapTypeLabels[mapTypeIndex]}</span>
       {/if}
     </button>
-    <button class="map-control-button zoom-button" on:click={zoomIn} aria-label="확대">
+    <button class="map-control-button" on:click={()=>zoomSet(1)} aria-label="확대">
       <span class="material-icons">add</span>
     </button>
-    <button class="map-control-button zoom-button" on:click={zoomOut} aria-label="축소">
+    <button class="map-control-button" on:click={()=>zoomSet(-1)} aria-label="축소">
       <span class="material-icons">remove</span>
     </button>
-  </div>
-    <button class="map-control-button current-location-button" on:click={moveToCurrentLocation} aria-label="현재 위치로 이동">
+    <button class="map-control-button" on:click={moveToCurrentLocation} aria-label="현재 위치로 이동">
       <span class="material-icons">my_location</span>
     </button>
-  <div bind:this={mapElement} class="map"></div>
+  </div>
+  <div class="map-controls-bottom">
+    <button class="map-control-button" on:click={()=>{}} aria-label="지도 초기화">
+      <span class="material-icons">pin_drop</span>
+    </button>
+  </div>
+  <div bind:this={mapElement} class="map">
+    {#if !isMapLoaded}
+      <div class="skeleton-map">
+        <div class="logo-container">
+          <img src="/images/logo300.png" alt="로고" class="skeleton-logo" />
+        </div>
+      </div>
+    {/if}
+  </div>
 </div>
 
 <style>
@@ -208,6 +216,11 @@
     position: relative;
     width: 100%;
     height: 100vh;
+  }
+
+  .map {
+    width: 100%;
+    height: 100%;
   }
 
   .search-container {
@@ -227,7 +240,7 @@
     min-width: 0;
     height: 60px;
     background-color: rgba(255, 255, 255, 0.8);
-    padding: 5px 10px; /* 패딩을 줄임 */
+    padding: 0 10px;
     border-radius: 30px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     display: flex;
@@ -270,18 +283,38 @@
     color: var(--primary-color);
   }
 
-  .map-controls {
+  .ai-button {
+    margin-left: 10px;
+  }
+
+  .ai-button span {
+    font-weight: bold;
+  }
+
+  .map-controls-right {
     position: absolute;
-    bottom: 100px;
+    bottom: 80px;
     right: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 15px;
     z-index: 1000;
   }
 
-  .map-type-toggle {
-    position: relative; /* 툴팁 위치 지정을 위해 추가 */
+  .map-controls-bottom {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    z-index: 1000;
+  }
+
+  .map-control-button {
     width: 60px;
     height: 60px;
     background-color: rgba(255, 255, 255, 0.8);
@@ -293,7 +326,19 @@
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.3s;
-    margin-bottom: 10px;
+  }
+
+  .map-control-button:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
+  .map-control-button .material-icons {
+    font-size: 24px;
+    color: var(--primary-color);
+  }
+
+  .map-type-toggle {
+    position: relative; /* 툴팁 위치 지정을 위해 추가 */
   }
 
   .tooltip {
@@ -311,7 +356,6 @@
     animation: fadeInOut 2s ease-in-out;
   }
 
-  /* 툴팁 화살표 추가 */
   .tooltip::after {
     content: '';
     position: absolute;
@@ -323,59 +367,19 @@
     border-color: var(--primary-color) transparent transparent transparent;
   }
 
+  .user-button {
+    background-color: #a8f894;
+    margin-bottom: 30px;
+  }
+
+  .user-button .material-icons {
+    font-size: 35px;
+    color: var(--primary-color);
+  }
+
   @keyframes fadeInOut {
     0%, 100% { opacity: 0; }
     10%, 90% { opacity: 1; }
-  }
-
-  .zoom-button {
-    width: 60px;
-    height: 60px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border: none;
-    border-radius: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-bottom: 10px;
-  }
-
-  .zoom-button:last-child {
-    margin-bottom: 0;
-  }
-
-  .zoom-button:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-  }
-
-  .zoom-button .material-icons {
-    font-size: 24px;
-    color: var(--primary-color);
-  }
-
-  .current-location-button {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-  }
-
-  .current-location-button:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-  }
-
-  .current-location-button .material-icons {
-    font-size: 24px;
-    color: var(--primary-color);
-  }
-
-  .map {
-    width: 100%;
-    height: 100%;
   }
 
   /* 전역 스타일을 추가하여 지도 컨트롤이 검색 폼 위에 나타나지 않도록 합니다 */
@@ -385,7 +389,6 @@
     display: none;
   }
 
-  /* 모바일 화면에 대한 미디어 쿼리 추가 */
   @media (max-width: 600px) {
     .search-container {
       max-width: 100%;
@@ -403,14 +406,10 @@
     .search-form button .material-icons {
       font-size: 20px;
     }
-
-    .map-controls {
-      bottom: 80px;
-      right: 10px;
+    .ai-button {
+      margin-left: 5px;
     }
-
-    .map-type-toggle,
-    .zoom-button {
+    .map-control-button {
       width: 50px;
       height: 50px;
     }
@@ -421,28 +420,52 @@
     }
   }
 
-
-  /* 특정 버튼에 대한 추가 스타일 */
-  .ai-button {
-    margin-left: 10px;
+  .skeleton-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
-  .ai-button span {
-    font-weight: bold;
+  .logo-container {
+    animation: pulse 2s infinite;
   }
 
-  .zoom-button {
-    margin-bottom: 10px;
+  .skeleton-logo {
+    width: 250px;
+    height: 250px;
+    opacity: 0.5;
+    z-index: 1000;
   }
 
-  .zoom-button:last-child {
-    margin-bottom: 0;
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 
-  /* 모바일 화면에 대한 미디어 쿼리 */
-  @media (max-width: 600px) {
-    .ai-button {
-      margin-left: 5px;
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.25);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.5;
     }
   }
 </style>

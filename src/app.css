@@ -17,7 +17,7 @@ div:has(> :global(#svelte)) {
 :root {
 --primary-color: #2e6930; /* 녹색 계열 색상 */
 --primary-color-dark: #1c411e; /* 조금 더 어두운 녹색 */
---sidebar-color: #9ac79a;
+--sidebar-color: #d1d079;
 }
 
 .map-control-button {

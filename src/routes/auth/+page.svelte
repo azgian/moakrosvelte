@@ -31,6 +31,9 @@
         </svg>
         <span>Google로 로그인</span>
     </button>
+    <button on:click={()=>goto('/')} class="google-button">
+        <span class="material-icons">home</span> 홈으로 가기
+    </button>
 </div>
 
 <style>
@@ -38,7 +41,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     height: 100vh;
+    gap: 150px;
 }
 
 .google-button {

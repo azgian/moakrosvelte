@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { stylesheets } from './../../../.svelte-kit/output/server/nodes/2.js';
     import type { PageData } from './$types';
     
     export let data: PageData;
